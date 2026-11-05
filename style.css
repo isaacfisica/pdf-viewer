@@ -49,7 +49,8 @@ body.sidebar-open #viewerContainer { left: var(--side-w); }
 .pdfViewer .page { box-shadow: 0 2px 8px rgba(0,0,0,.4); margin: 10px auto; }
 
 /* 워터마크 오버레이 (타일 260x150pt, PDF 좌하단 기준 → 다운로드본과 동일 배치). 클릭은 통과 */
-.pdfViewer .page::after {
+/* ::after 는 PDF.js 로딩 아이콘용이라 로드 완료 후 display:none 됨 → ::before 사용 */
+.pdfViewer .page::before {
   content: ""; position: absolute; inset: 0; z-index: 10; pointer-events: none;
   background-image: var(--wm, none); background-repeat: repeat; background-position: 0 100%;
   background-size: calc(var(--scale-factor, 1) * 260px) calc(var(--scale-factor, 1) * 150px);
