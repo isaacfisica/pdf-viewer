@@ -1,21 +1,78 @@
 * { box-sizing: border-box; }
-body { margin: 0; background: #525659; font-family: system-ui, sans-serif; }
-header {
-  position: sticky; top: 0; z-index: 10;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 16px; background: #323639; color: #fff;
-}
-#title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-button { padding: 6px 14px; border: 0; border-radius: 4px; background: #1a73e8; color: #fff; cursor: pointer; }
-button:disabled { background: #777; cursor: default; }
-#pages { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 16px; }
-.page { position: relative; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.4); max-width: 100%; }
-.page canvas { display: block; width: 100%; height: auto; }
-.wm { position: absolute; inset: 0; pointer-events: none; background-repeat: repeat; }
-#msg { color: #fff; text-align: center; }
+:root { --bar-h: 44px; --side-w: 260px; }
+html, body { margin: 0; height: 100%; }
+body { background: #525659; font-family: system-ui, -apple-system, "Malgun Gothic", sans-serif; overflow: hidden; }
 
-/* make.html */
-.maker { max-width: 640px; margin: 40px auto; padding: 24px; background: #fff; border-radius: 8px; }
-.maker label { display: block; margin-top: 12px; font-size: 14px; }
-.maker input { width: 100%; padding: 8px; margin-top: 4px; }
-.maker textarea { width: 100%; height: 80px; margin-top: 12px; }
+/* ---- toolbar ---- */
+#toolbar {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--bar-h); z-index: 20;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 0 10px; background: #323639; color: #eee; font-size: 13px;
+  overflow-x: auto; white-space: nowrap;
+}
+#toolbar .grp { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+#title { max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+#toolbar button, #toolbar select, #toolbar input {
+  font: inherit; color: #eee; background: #474b4e; border: 0; border-radius: 4px; height: 28px;
+}
+#toolbar button { padding: 0 10px; cursor: pointer; }
+#toolbar button:hover:not(:disabled) { background: #5a5e61; }
+#toolbar button:disabled { opacity: .45; cursor: default; }
+#toolbar button.icon { width: 28px; padding: 0; font-size: 16px; }
+#toolbar select { padding: 0 4px; }
+#pageNum { width: 44px; text-align: center; }
+#findInput { width: 160px; padding: 0 8px; }
+#findMsg { min-width: 52px; color: #bbb; }
+#findMsg.notfound { color: #ff8a80; }
+#dl { background: #1a73e8 !important; }
+#dl:hover:not(:disabled) { background: #1765cc !important; }
+
+/* ---- sidebar (목차) ---- */
+#sidebar {
+  position: fixed; top: var(--bar-h); bottom: 0; left: 0; width: var(--side-w); z-index: 15;
+  background: #3b3e41; color: #ddd; overflow: auto; padding: 8px 0; font-size: 13px;
+}
+#outline ul { list-style: none; margin: 0; padding-left: 14px; }
+#outline > ul { padding-left: 6px; }
+#outline li > div { display: flex; align-items: flex-start; }
+#outline .tw { width: 16px; flex-shrink: 0; cursor: pointer; color: #999; text-align: center; user-select: none; }
+#outline a { flex: 1; color: inherit; text-decoration: none; padding: 3px 6px; border-radius: 3px; }
+#outline a:hover { background: #50545a; }
+#outline li.collapsed > ul { display: none; }
+#outline .empty { padding: 8px 14px; color: #999; }
+
+/* ---- viewer ---- */
+#viewerContainer {
+  position: absolute; top: var(--bar-h); bottom: 0; left: 0; right: 0; overflow: auto;
+}
+body.sidebar-open #viewerContainer { left: var(--side-w); }
+.pdfViewer .page { box-shadow: 0 2px 8px rgba(0,0,0,.4); margin: 10px auto; }
+
+/* 워터마크 오버레이 (타일 260x150pt, PDF 좌하단 기준 → 다운로드본과 동일 배치). 클릭은 통과 */
+.pdfViewer .page::after {
+  content: ""; position: absolute; inset: 0; z-index: 10; pointer-events: none;
+  background-image: var(--wm, none); background-repeat: repeat; background-position: 0 100%;
+  background-size: calc(var(--scale-factor, 1) * 260px) calc(var(--scale-factor, 1) * 150px);
+}
+
+/* 텍스트 선택/복사 차단 (검색 하이라이트는 유지) */
+.textLayer { user-select: none; -webkit-user-select: none; }
+
+#msg {
+  position: fixed; top: 50%; left: 0; right: 0; text-align: center; color: #fff; margin: 0; z-index: 5;
+}
+#msg:empty { display: none; }
+
+/* 인쇄 차단: 다운로드본으로 인쇄 */
+@media print {
+  body > * { display: none !important; }
+  body::after { content: "인쇄는 다운로드한 파일로 해 주세요."; display: block; padding: 40px; font-size: 18px; }
+}
+
+/* ---- 좁은 화면 ---- */
+@media (max-width: 760px) {
+  #title, #zoomSelect, #findMsg { display: none; }
+  #findInput { width: 90px; }
+  body.sidebar-open #viewerContainer { left: 0; }
+  #sidebar { width: 80%; box-shadow: 4px 0 12px rgba(0,0,0,.5); }
+}
